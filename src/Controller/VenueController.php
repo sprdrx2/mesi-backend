@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Venue;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class VenueController extends AbstractController
@@ -30,5 +32,36 @@ class VenueController extends AbstractController
             ->findOneBy(["yelp_id" => $yelp_id]);
 
         return $this->json($venue);
+    }
+
+    /**
+     * @Route("/venue/{yelp_id}", name="create", methods={"POST"})
+     */
+    public function createAction(Request $request, $yelp_id)
+    {
+        $exists = $this->getDoctrine()
+            ->getRepository(Venue::class)
+            ->findOneBy(["yelp_id" => $yelp_id]);
+
+        if(is_null($exists)) {
+            $venue = new Venue();
+            $venue->setYelpId($yelp_id);
+            $jsonVenue = json_decode($request->getContent());
+
+            $venue->setMenuEnfant($jsonVenue->menu_enfant);
+            $venue->setEspacePoussette($jsonVenue->espace_poussette);
+            $venue->setEspaceJeu($jsonVenue->espace_jeu);
+            $venue->setTableLanger($jsonVenue->table_langer);
+            $venue->setTableLangerMen($jsonVenue->table_langer_men);
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($venue);
+            $entityManager->flush();
+
+            return $this->json($venue);
+
+        } else{
+            throw new HttpException(400,'Venue already exists!');
+        }
     }
 }
