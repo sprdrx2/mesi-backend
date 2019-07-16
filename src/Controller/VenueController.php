@@ -32,6 +32,10 @@ class VenueController extends AbstractController
             ->getRepository(Venue::class)
             ->findOneBy(["yelp_id" => $yelp_id]);
 
+        if(is_null($venue)){
+            throw new HttpException(404, "Venue doesn't exist!");
+        }
+
         return $this->json($venue);
     }
 
@@ -76,7 +80,7 @@ class VenueController extends AbstractController
             ->findOneBy(["yelp_id" => $yelp_id]);
 
         if(is_null($venue)){
-            throw new HttpException(400, "Venue doesn't exist!");
+            throw new HttpException(404, "Venue doesn't exist!");
         }
 
         $jsonVenue = json_decode($request->getContent());
@@ -104,7 +108,7 @@ class VenueController extends AbstractController
             ->findOneBy(["yelp_id" => $yelp_id]);
 
         if(is_null($venue)){
-            throw new HttpException(400, "Venue doesn't exist!");
+            throw new HttpException(404, "Venue doesn't exist!");
         }
 
         $entityManager = $this->getDoctrine()->getManager();
