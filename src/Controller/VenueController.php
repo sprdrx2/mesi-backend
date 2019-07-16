@@ -64,4 +64,32 @@ class VenueController extends AbstractController
             throw new HttpException(400,'Venue already exists!');
         }
     }
+
+    /**
+     * @Route("/venue/{yelp_id}", name="update", methods={"PUT"})
+     */
+    public function updateAction(Request $request, $yelp_id)
+    {
+        $venue = $this->getDoctrine()
+            ->getRepository(Venue::class)
+            ->findOneBy(["yelp_id" => $yelp_id]);
+
+        if(is_null($venue)){
+            throw new HttpException(400, "Venue doesn't exist!");
+        }
+
+        $jsonVenue = json_decode($request->getContent());
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $venue->setMenuEnfant($jsonVenue->menu_enfant);
+        $venue->setEspacePoussette($jsonVenue->espace_poussette);
+        $venue->setEspaceJeu($jsonVenue->espace_jeu);
+        $venue->setTableLanger($jsonVenue->table_langer);
+        $venue->setTableLangerMen($jsonVenue->table_langer_men);
+
+        $entityManager->persist($venue);
+        $entityManager->flush($venue);
+
+        return $this->json($venue);
+    }
 }
