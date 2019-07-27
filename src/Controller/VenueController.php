@@ -142,7 +142,7 @@ class VenueController extends AbstractController
                 $mesiVenueArray["espaceJeu"] = False;
                 $mesiVenueArray["yelpVenue"] = $yelpVenue;
             } else {
-                $mesiVenueArray["knownStatus"] = False;
+                $mesiVenueArray["knownStatus"] = True;
                 $mesiVenueArray["yelp_id"] = $yelpVenue["id"];
                 $mesiVenueArray["espacePoussette"] = $mesiVenue->getEspacePoussette();
                 $mesiVenueArray["tableLanger"] =  $mesiVenue->getTableLanger();
