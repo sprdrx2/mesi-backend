@@ -140,16 +140,18 @@ class VenueController extends AbstractController
                 $mesiVenueArray["tableLangerMen"] = False;
                 $mesiVenueArray["menuEnfant"] = False;
                 $mesiVenueArray["espaceJeu"] = False;
-                $mesiVenueArray["yelpVenue"] = $yelpVenue;
+		$mesiVenueArray["yelpVenue"] = $yelpVenue;
+		$mesiVenueArray["bbFriendly"] = False;
             } else {
-                $mesiVenueArray["knownStatus"] = True;
+		$mesiVenueArray["knownStatus"] = True;
                 $mesiVenueArray["yelp_id"] = $yelpVenue["id"];
                 $mesiVenueArray["espacePoussette"] = $mesiVenue->getEspacePoussette();
                 $mesiVenueArray["tableLanger"] =  $mesiVenue->getTableLanger();
                 $mesiVenueArray["tableLangerMen"] = $mesiVenue->getTableLangerMen();
                 $mesiVenueArray["menuEnfant"] = $mesiVenue->getMenuEnfant();
                 $mesiVenueArray["espaceJeu"] = $mesiVenue->getEspaceJeu();
-                $mesiVenueArray["yelpVenue"] = $yelpVenue;
+		$mesiVenueArray["yelpVenue"] = $yelpVenue;
+		$mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
             }
             array_push($mesiVenuesArray, $mesiVenueArray);
         }
