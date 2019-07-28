@@ -25,12 +25,14 @@ class RandomYelpFixtures extends Fixture
     private $yelpVenuesInsertedAllCity     = 0;
     private $yelpVenuesBBFriendlyAllCity   = 0;
 
+    private $cityTotal = 0;
 
     private $yelpVenues = [];
 
     private $manager;
 
     private function getYelpVenues($city) {
+	$this->yelpVenues = [];
         $httpClient = HttpClient::create(['headers' => [
             'Authorization' => 'Bearer ' . $this->yelpApiKey,
         ]]);
@@ -40,7 +42,7 @@ class RandomYelpFixtures extends Fixture
 	echo "nombre de resultats yelp: ". $this->yelpVenuesTotal ."\n";
         $offset = 0;
         while ($offset < $this->yelpVenuesTotal and $offset < 1000) {
-            $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "?&categories=bars,restaurant&location=" . $city."&offset=".$offset."&limit=50");
+            $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "?&radius=10000&categories=bars,restaurant&location=" . $city."&offset=".$offset."&limit=50");
            foreach( json_decode($httpResponse->getContent(), TRUE)['businesses'] as $yvArr) {
 		$this->yelpVenues[] = $yvArr;
 	   }
@@ -59,7 +61,7 @@ class RandomYelpFixtures extends Fixture
 		    //echo "creation d'un record pour item ".$compteur."/".$this->yelpVenuesTotal."\n";
                     $this->yelpVenuesInserted++;
 		   
-		    if (($compteur % 2) === 0) {
+		    if (($compteur % 4) === 0) {
 		    	$venue = new Venue();
                     	$venue->setYelpId($yelpVenue['id']);
                     	$venue->setEspaceJeu((bool)rand(0, 1));
@@ -94,8 +96,12 @@ class RandomYelpFixtures extends Fixture
         $this->manager = $manager;
 	//include('./src/DataFixtures/villesFrance.array.php');
 	$villesFrance = ["Lyon", "Paris", "Marseille"];
+	$this->cityTotal = count($villesFrance);
+	echo "Villes à traiter: $this->cityTotal\n";
+	$compteur = 0;
 	foreach($villesFrance as $city) {
-		echo "Loading fixtures for $city\n";
+		$compteur++;
+		echo "Loading fixtures for $city ($compteur/$this->cityTotal).\n";
 		$this->loadCity($city);
 		$this->yelpVenuesTotalAllCity        += $this->yelpVenuesTotal;
     		$this->yelpVenuesInsertedAllCity     += $this->yelpVenuesInserted; 
@@ -106,6 +112,7 @@ class RandomYelpFixtures extends Fixture
 
 	}	
 	$manager->flush();
+	echo "Villes traitées: $this->cityTotal\n";
         echo 'TOTAL YelpVenues récupérés: ' . $this->yelpVenuesTotalAllCity . "\n";
         echo 'TOTAL YelpVenues insérées: ' . $this->yelpVenuesInsertedAllCity . "\n";
         echo 'TOTAL YelpVenues BB Friendly: ' . $this->yelpVenuesBBFriendlyAllCity . "\n";
