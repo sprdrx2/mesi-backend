@@ -127,7 +127,10 @@ class VenueController extends AbstractController
      */
     public function compareAction(Request $request) {
         $yelpVenues = json_decode($request->getContent(), true);
-        $mesiVenuesArray = []; // /!\ pluriel
+	$responseArray = []; // /!\ pluriel
+	$responseArray["bbFriendlyVenues"] = [];
+	$responseArray["bbNotFriendlyVenues"] = [];
+	$responseArray["unknownStatusVenues"] = [];
 
         foreach($yelpVenues as $yelpVenue) {
             $mesiVenueArray = []; // /!\ singulier
@@ -141,7 +144,9 @@ class VenueController extends AbstractController
                 $mesiVenueArray["menuEnfant"] = False;
                 $mesiVenueArray["espaceJeu"] = False;
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
-		$mesiVenueArray["bbFriendly"] = False;
+		$mesiVenueArray["bbFriendly"] = null;
+
+		array_push($responseArray["unknownStatusVenues"], $mesiVenueArray);
             } else {
 		$mesiVenueArray["knownStatus"] = True;
                 $mesiVenueArray["yelp_id"] = $yelpVenue["id"];
@@ -152,11 +157,17 @@ class VenueController extends AbstractController
                 $mesiVenueArray["espaceJeu"] = $mesiVenue->getEspaceJeu();
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
 		$mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+
+		if ($mesiVenueArray["bbFriendly"] === true) {
+			array_push($responseArray["bbFriendlyVenues"], $mesiVenueArray);
+		} else {
+			array_push($responseArray["bbNotFriendlyVenues"], $mesiVenueArray);	
+		}
             }
-            array_push($mesiVenuesArray, $mesiVenueArray);
+          
         }
 
-        return $this->json($mesiVenuesArray);
+        return $this->json($responseArray);
     }
 
 }
