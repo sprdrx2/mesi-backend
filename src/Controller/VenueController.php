@@ -12,21 +12,21 @@ use Symfony\Component\Routing\Annotation\Route;
 class VenueController extends AbstractController
 {
     /**
-     * @Route("/venue", name="list", methods={"GET"})
+     * Route("/venue", name="list", methods={"GET"})
      */
-    public function listAction()
+    /*public function listAction()
     {
         $venues = $this->getDoctrine()
             ->getRepository(Venue::class)
             ->findAll();
 
         return $this->json($venues);
-    }
+    }*/
 
     /**
-     * @Route("/venue/{yelp_id}", name="show", methods={"GET"})
+     * Route("/venue/{yelp_id}", name="show", methods={"GET"})
      */
-    public function showAction($yelp_id)
+    /*public function showAction($yelp_id)
     {
         $venue = $this->getDoctrine()
             ->getRepository(Venue::class)
@@ -37,27 +37,27 @@ class VenueController extends AbstractController
         }
 
         return $this->json($venue);
-    }
+    }*/
 
     /**
-     * @Route("/venue/{yelp_id}", name="create", methods={"POST"})
+     * @Route("/venue/create", name="create", methods={"POST"})
      */
-    public function createAction(Request $request, $yelp_id)
+    public function createAction(Request $request)
     {
-        $exists = $this->getDoctrine()
+
+    $jsonVenue = json_decode($request->getContent());
+	$exists = $this->getDoctrine()
             ->getRepository(Venue::class)
-            ->findOneBy(["yelp_id" => $yelp_id]);
+            ->findOneBy(["yelp_id" => $jsonVenue->yelp_id]);
 
         if(is_null($exists)) {
             $venue = new Venue();
-            $venue->setYelpId($yelp_id);
-            $jsonVenue = json_decode($request->getContent());
-
-            $venue->setMenuEnfant($jsonVenue->menu_enfant);
-            $venue->setEspacePoussette($jsonVenue->espace_poussette);
-            $venue->setEspaceJeu($jsonVenue->espace_jeu);
-            $venue->setTableLanger($jsonVenue->table_langer);
-            $venue->setTableLangerMen($jsonVenue->table_langer_men);
+            $venue->setYelpId($jsonVenue->yelp_id);
+            $venue->setMenuEnfant($jsonVenue->menuEnfant);
+            $venue->setEspacePoussette($jsonVenue->espacePoussette);
+            $venue->setEspaceJeu($jsonVenue->espaceJeu);
+            $venue->setTableLanger($jsonVenue->tableLanger);
+            $venue->setTableLangerMen($jsonVenue->tableLangerMen);
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($venue);
@@ -71,26 +71,27 @@ class VenueController extends AbstractController
     }
 
     /**
-     * @Route("/venue/{yelp_id}", name="update", methods={"PUT"})
+     * @Route("/venue", name="update", methods={"PUT"})
      */
     public function updateAction(Request $request, $yelp_id)
     {
+        $jsonVenue = json_decode($request->getContent());
         $venue = $this->getDoctrine()
             ->getRepository(Venue::class)
-            ->findOneBy(["yelp_id" => $yelp_id]);
+            ->findOneBy(["yelp_id" => $jsonVenue->yelp_id]);
 
         if(is_null($venue)){
             throw new HttpException(404, "Venue doesn't exist!");
         }
 
-        $jsonVenue = json_decode($request->getContent());
+
         $entityManager = $this->getDoctrine()->getManager();
 
-        $venue->setMenuEnfant($jsonVenue->menu_enfant);
-        $venue->setEspacePoussette($jsonVenue->espace_poussette);
-        $venue->setEspaceJeu($jsonVenue->espace_jeu);
-        $venue->setTableLanger($jsonVenue->table_langer);
-        $venue->setTableLangerMen($jsonVenue->table_langer_men);
+        $venue->setMenuEnfant($jsonVenue->menuEnfant);
+        $venue->setEspacePoussette($jsonVenue->espacePoussette);
+        $venue->setEspaceJeu($jsonVenue->espaceJeu);
+        $venue->setTableLanger($jsonVenue->tableLanger);
+        $venue->setTableLangerMen($jsonVenue->tableLangerMen);
 
         $entityManager->persist($venue);
         $entityManager->flush($venue);
