@@ -71,9 +71,9 @@ class VenueController extends AbstractController
     }
 
     /**
-     * @Route("/venue", name="update", methods={"PUT"})
+     * @Route("/venue/update", name="update", methods={"PUT"})
      */
-    public function updateAction(Request $request, $yelp_id)
+    public function updateAction(Request $request)
     {
         $jsonVenue = json_decode($request->getContent());
         $venue = $this->getDoctrine()
