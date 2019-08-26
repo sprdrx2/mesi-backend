@@ -41,6 +41,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/create", name="create", methods={"POST"})
+     * @IsGranted("ROLE_USER")
      */
     public function createAction(Request $request)
     {
@@ -72,6 +73,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/update", name="update", methods={"PUT"})
+     * @IsGranted("ROLE_USER)
      */
     public function updateAction(Request $request)
     {
@@ -101,6 +103,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/{yelp_id}", name="delete", methods={"DELETE"})
+     * @IsGranted(ROLE_ADMIN)
      */
     public function deleteAction(Request $request, $yelp_id)
     {
