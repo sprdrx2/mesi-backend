@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Venue;
 use phpDocumentor\Reflection\Types\Void_;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class VenueController extends AbstractController
 {
@@ -73,7 +75,9 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/update", name="update", methods={"PUT"})
-     * @IsGranted("ROLE_USER)
+     * @IsGranted("ROLE_USER")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updateAction(Request $request)
     {
@@ -103,7 +107,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/{yelp_id}", name="delete", methods={"DELETE"})
-     * @IsGranted(ROLE_ADMIN)
+     * @IsGranted("ROLE_ADMIN")
      */
     public function deleteAction(Request $request, $yelp_id)
     {
@@ -118,12 +122,14 @@ class VenueController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->remove($venue);
         $entityManager->flush();
-
-        $venues = $this->getDoctrine()
+        $response = new Response();
+        $response->setStatusCode(200);
+        return $response;
+        /*$venues = $this->getDoctrine()
             ->getRepository(Venue::class)
             ->findAll();
 
-        return $this->json($venues);
+        return $this->json($venues);*/
     }
 
     /**
@@ -172,6 +178,15 @@ class VenueController extends AbstractController
         }
 
         return $this->json($responseArray);
+    }
+
+    /**
+     * @Route("/logout", name="app_logout", methods={"GET"})
+     */
+    public function logout()
+    {
+        // controller can be blank: it will never be executed!
+        throw new \Exception('Don\'t forget to activate logout in security.yaml');
     }
 
 }

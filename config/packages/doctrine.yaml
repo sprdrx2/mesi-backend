@@ -2,12 +2,11 @@ doctrine:
     dbal:
         # configure these for your database server
         driver: 'pdo_mysql'
-        server_version: 'mariadb-10.1.37'
+        server_version: '5.7'
         charset: utf8mb4
         default_table_options:
             charset: utf8mb4
             collate: utf8mb4_unicode_ci
-
         host: 'localhost'
         dbname : 'mesi'
         user: 'root'
