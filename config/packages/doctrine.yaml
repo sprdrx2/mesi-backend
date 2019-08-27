@@ -2,15 +2,15 @@ doctrine:
     dbal:
         # configure these for your database server
         driver: 'pdo_mysql'
-        host: 'localhost'
-        dbname: 'bb'
-        user: 'guille'
-        password: 'bb'
         server_version: '5.7'
         charset: utf8mb4
         default_table_options:
             charset: utf8mb4
             collate: utf8mb4_unicode_ci
+        host: 'localhost'
+        dbname: 'mesi'
+        user: 'mesi'
+        password: 'mesi'
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore
