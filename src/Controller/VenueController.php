@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Venue;
 use phpDocumentor\Reflection\Types\Void_;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,33 +12,47 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class VenueController extends AbstractController
 {
-    /**
-     * Route("/venue", name="list", methods={"GET"})
-     */
-    /*public function listAction()
-    {
-        $venues = $this->getDoctrine()
-            ->getRepository(Venue::class)
-            ->findAll();
 
-        return $this->json($venues);
-    }*/
+    private $yelpApiKey = 'VUgnEj3HGTTbpvVzNh_gChrFdhnn9Gw75jKm761Hlel0tzsF57f3jdptFHQEtO5C7pBjzndUmIcv0S1C7eZh_-9TCI5m5JKVqwB7rFCQDu1ztwvwxjK1Sqs6OJQsXXYx';
+    private $yelpApiAddress = 'https://corsanywhere.herokuapp.com/https://api.yelp.com/v3/businesses';
 
     /**
-     * Route("/venue/{yelp_id}", name="show", methods={"GET"})
+     * @Route("/venue/{yelp_id}", name="compareOne", methods={"GET"})
      */
-    /*public function showAction($yelp_id)
+    public function compareOneAction($yelp_id)
     {
+        //$yelpVenue = json_decode($request->getContent(), true);
+        $yelpVenue = $this->searchYelpBusiness($yelp_id);
+        $mesiVenueArray = []; // /!\ singulier
         $venue = $this->getDoctrine()
             ->getRepository(Venue::class)
             ->findOneBy(["yelp_id" => $yelp_id]);
 
         if(is_null($venue)){
-            throw new HttpException(404, "Venue doesn't exist!");
+            $mesiVenueArray["knownStatus"] = False;
+            $mesiVenueArray["yelp_id"] = $yelp_id;
+            $mesiVenueArray["espacePoussette"] = False;
+            $mesiVenueArray["tableLanger"] = False;
+            $mesiVenueArray["tableLangerMen"] = False;
+            $mesiVenueArray["menuEnfant"] = False;
+            $mesiVenueArray["espaceJeu"] = False;
+            $mesiVenueArray["yelpVenue"] = $yelpVenue;
+            $mesiVenueArray["bbFriendly"] = null;
+
+        } else {
+            $mesiVenueArray["knownStatus"] = True;
+            $mesiVenueArray["yelp_id"] = $yelp_id;
+            $mesiVenueArray["espacePoussette"] = $venue->getEspacePoussette();
+            $mesiVenueArray["tableLanger"] =  $venue->getTableLanger();
+            $mesiVenueArray["tableLangerMen"] = $venue->getTableLangerMen();
+            $mesiVenueArray["menuEnfant"] = $venue->getMenuEnfant();
+            $mesiVenueArray["espaceJeu"] = $venue->getEspaceJeu();
+            $mesiVenueArray["yelpVenue"] = $yelpVenue;
+            $mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
         }
 
-        return $this->json($venue);
-    }*/
+        return $this->json($mesiVenueArray);
+    }
 
     /**
      * @Route("/venue/create", name="create", methods={"POST"})
@@ -169,6 +184,16 @@ class VenueController extends AbstractController
         }
 
         return $this->json($responseArray);
+    }
+
+    public function searchYelpBusiness(string $yelp_id)
+    {
+        $httpClient = HttpClient::create(['headers' => [
+            'Authorization' => 'Bearer ' . $this->yelpApiKey,
+        ]]);
+        $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "/" . $yelp_id);
+        $jsonResponse = json_decode($httpResponse->getContent(), TRUE);
+        return $jsonResponse;
     }
 
 }
