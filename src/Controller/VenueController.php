@@ -5,13 +5,17 @@ namespace App\Controller;
 use App\Entity\Venue;
 use phpDocumentor\Reflection\Types\Void_;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class VenueController extends AbstractController
 {
+
+
 
     private $yelpApiKey = 'VUgnEj3HGTTbpvVzNh_gChrFdhnn9Gw75jKm761Hlel0tzsF57f3jdptFHQEtO5C7pBjzndUmIcv0S1C7eZh_-9TCI5m5JKVqwB7rFCQDu1ztwvwxjK1Sqs6OJQsXXYx';
     private $yelpApiAddress = 'https://corsanywhere.herokuapp.com/https://api.yelp.com/v3/businesses';
@@ -56,6 +60,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/create", name="create", methods={"POST"})
+     * @IsGranted("ROLE_USER")
      */
     public function createAction(Request $request)
     {
@@ -87,6 +92,9 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/update", name="update", methods={"PUT"})
+     * @IsGranted("ROLE_USER")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function updateAction(Request $request)
     {
@@ -116,6 +124,7 @@ class VenueController extends AbstractController
 
     /**
      * @Route("/venue/{yelp_id}", name="delete", methods={"DELETE"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function deleteAction(Request $request, $yelp_id)
     {
@@ -130,12 +139,14 @@ class VenueController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->remove($venue);
         $entityManager->flush();
-
-        $venues = $this->getDoctrine()
+        $response = new Response();
+        $response->setStatusCode(200);
+        return $response;
+        /*$venues = $this->getDoctrine()
             ->getRepository(Venue::class)
             ->findAll();
 
-        return $this->json($venues);
+        return $this->json($venues);*/
     }
 
     /**
@@ -194,6 +205,15 @@ class VenueController extends AbstractController
         $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "/" . $yelp_id);
         $jsonResponse = json_decode($httpResponse->getContent(), TRUE);
         return $jsonResponse;
+    }
+
+    /**
+     * @Route("/logout", name="app_logout", methods={"GET"})
+     */
+    public function logout()
+    {
+        // controller can be blank: it will never be executed!
+        throw new \Exception('Don\'t forget to activate logout in security.yaml');
     }
 
 }
