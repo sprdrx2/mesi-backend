@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Commentaire;
+use App\Entity\User;
 use App\Entity\Venue;
 use phpDocumentor\Reflection\Types\Void_;
 use Symfony\Component\HttpClient\HttpClient;
@@ -11,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 class VenueController extends AbstractController
 {
@@ -42,6 +45,8 @@ class VenueController extends AbstractController
             $mesiVenueArray["espaceJeu"] = False;
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = null;
+            $mesiVenueArray["commentaires"] = null;
+            $mesiVenueArray["nbCommentaires"] = 0;
 
         } else {
             $mesiVenueArray["knownStatus"] = True;
@@ -53,6 +58,16 @@ class VenueController extends AbstractController
             $mesiVenueArray["espaceJeu"] = $venue->getEspaceJeu();
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+
+            $mesiVenueArray["nbCommentaires"] = count($venue->getCommentaires());
+            $arrCommentaires = [];
+
+            foreach ($venue->getCommentaires() as $commentaire)
+            {
+                array_push($arrCommentaires, $commentaire->getCommentaire());
+
+            }
+            $mesiVenueArray["commentaires"] = $arrCommentaires;
         }
 
         return $this->json($mesiVenueArray);
@@ -172,6 +187,7 @@ class VenueController extends AbstractController
                 $mesiVenueArray["espaceJeu"] = False;
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
 		$mesiVenueArray["bbFriendly"] = null;
+        $mesiVenueArray["nbCommentaires"]= 0;
 
 		array_push($responseArray["unknownStatusVenues"], $mesiVenueArray);
             } else {
@@ -184,6 +200,7 @@ class VenueController extends AbstractController
                 $mesiVenueArray["espaceJeu"] = $mesiVenue->getEspaceJeu();
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
 		$mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+        $mesiVenueArray["nbCommentaires"]= count($mesiVenue->getCommentaires());
 
 		if ($mesiVenueArray["bbFriendly"] === true) {
 			array_push($responseArray["bbFriendlyVenues"], $mesiVenueArray);
@@ -205,6 +222,53 @@ class VenueController extends AbstractController
         $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "/" . $yelp_id);
         $jsonResponse = json_decode($httpResponse->getContent(), TRUE);
         return $jsonResponse;
+    }
+
+    /**
+     * @Route("/addcomment/{yelp_id}", methods={"POST"})
+     * @IsGranted("ROLE_USER")
+     * @param string $yelp_id
+     * @param Request $request
+     * @return Response
+     * @throws \Exception
+     */
+    public function addCommentaireAction(string $yelp_id, Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $venue = $this->getDoctrine()
+            ->getRepository(Venue::class)
+            ->findOneBy(["yelp_id" => $yelp_id]);
+
+        $user = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->findOneBy(["email" => $request->getUser()]);
+        var_dump($user);
+
+        if(is_null($venue)){
+            throw new HttpException(404, "Venue doesn't exist!");
+        }
+
+        $commentaire = new Commentaire();
+        $commentaire->setCommentaire($data["commentaire"]);
+        $commentaire->setDate(new \DateTime());
+        $commentaire->setVenue($venue);
+        $commentaire->setUser($user);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($commentaire);
+        $entityManager->flush();
+
+        /*
+        $venue->addCommentaire($commentaire);
+        $user->addCommentaire($commentaire);
+        $entityManager->persist($venue);
+        $entityManager->persist($user);
+        $entityManager->flush();*/
+
+        $response = new Response();
+        $response->setStatusCode(200);
+        return $response;
     }
 
     /**

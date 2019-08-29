@@ -20,9 +20,9 @@ security:
         main:
             anonymous: true
             http_basic: true
-            guard:
-                authenticators:
-                    - App\Security\TokenAuthenticator
+            #guard:
+             #   authenticators:
+              #      - App\Security\TokenAuthenticator
             form_login:
                 login_path: login
                 check_path: login_check

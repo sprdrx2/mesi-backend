@@ -9,8 +9,8 @@ doctrine:
             collate: utf8mb4_unicode_ci
         host: 'localhost'
         dbname: 'mesi'
-        user: 'mesi'
-        password: 'mesi'
+        user: 'root'
+        password: 'root'
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore
