@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Venue;
+use App\Entity\Commentaire;
+use App\Entity\User;
 use phpDocumentor\Reflection\Types\Void_;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +44,8 @@ class VenueController extends AbstractController
             $mesiVenueArray["chaiseHaute"] = false;
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = null;
+            $mesiVenueArray["commentaires"] = null;
+            $mesiVenueArray["nbCommentaires"] = 0;
 
         } else {
             $mesiVenueArray["knownStatus"] = True;
@@ -55,6 +59,17 @@ class VenueController extends AbstractController
             $mesiVenueArray["chaiseHaute"] = $venue->getChaiseHaute();
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+            $mesiVenueArray["nbCommentaires"] = count($venue->getCommentaires());
+            $arrCommentaires = [];
+            foreach ($venue->getCommentaires() as $commentaire)
+            {
+                $arrC = [];
+                $arrC["commentaire"] = $commentaire->getCommentaire();
+                $arrC["author"] = $commentaire->getUser()->getEmail();
+                $arrC["date"] = $commentaire->getDate();
+                array_push($arrCommentaires, $arrC);
+            }
+            $mesiVenueArray["commentaires"] = $arrCommentaires;
         }
 
         return $this->json($mesiVenueArray);
@@ -176,30 +191,32 @@ class VenueController extends AbstractController
                 $mesiVenueArray["espaceJeu"] = False;
                 $mesiVenueArray["chaiseHaute"] = False;
                 $mesiVenueArray["wcEnfant"] = False;
-		$mesiVenueArray["yelpVenue"] = $yelpVenue;
-		$mesiVenueArray["bbFriendly"] = null;
+		        $mesiVenueArray["yelpVenue"] = $yelpVenue;
+		        $mesiVenueArray["bbFriendly"] = null;
+                $mesiVenueArray["nbCommentaires"]= 0;
 
-		array_push($responseArray["unknownStatusVenues"], $mesiVenueArray);
+		        array_push($responseArray["unknownStatusVenues"], $mesiVenueArray);
+
             } else {
-		$mesiVenueArray["knownStatus"] = True;
+                $mesiVenueArray["knownStatus"] = True;
                 $mesiVenueArray["yelp_id"] = $yelpVenue["id"];
                 $mesiVenueArray["espacePoussette"] = $mesiVenue->getEspacePoussette();
-                $mesiVenueArray["tableLanger"] =  $mesiVenue->getTableLanger();
+                $mesiVenueArray["tableLanger"] = $mesiVenue->getTableLanger();
                 $mesiVenueArray["tableLangerMen"] = $mesiVenue->getTableLangerMen();
                 $mesiVenueArray["menuEnfant"] = $mesiVenue->getMenuEnfant();
                 $mesiVenueArray["espaceJeu"] = $mesiVenue->getEspaceJeu();
                 $mesiVenueArray["chaiseHaute"] = $mesiVenue->getChaiseHaute();
                 $mesiVenueArray["wcEnfant"] = $mesiVenue->getWcEnfant();
-		$mesiVenueArray["yelpVenue"] = $yelpVenue;
-		$mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+                $mesiVenueArray["yelpVenue"] = $yelpVenue;
+                $mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR $mesiVenueArray["menuEnfant"] OR $mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
+                $mesiVenueArray["nbCommentaires"] = count($mesiVenue->getCommentaires());
 
-		if ($mesiVenueArray["bbFriendly"] === true) {
-			array_push($responseArray["bbFriendlyVenues"], $mesiVenueArray);
-		} else {
-			array_push($responseArray["bbNotFriendlyVenues"], $mesiVenueArray);	
-		}
+                if ($mesiVenueArray["bbFriendly"] === true) {
+                    array_push($responseArray["bbFriendlyVenues"], $mesiVenueArray);
+                } else {
+                    array_push($responseArray["bbNotFriendlyVenues"], $mesiVenueArray);
+                }
             }
-          
         }
 
         return $this->json($responseArray);
@@ -213,6 +230,37 @@ class VenueController extends AbstractController
         $httpResponse = $httpClient->request('GET', $this->yelpApiAddress . "/" . $yelp_id);
         $jsonResponse = json_decode($httpResponse->getContent(), TRUE);
         return $jsonResponse;
+    }
+
+    /**
+     * @Route("/addcomment/{yelp_id}", methods={"POST"})
+     * @IsGranted("ROLE_USER")
+     * @param string $yelp_id
+     * @param Request $request
+     * @return Response
+     * @throws \Exception
+     */
+    public function addCommentaireAction(string $yelp_id, Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+        $venue = $this->getDoctrine()
+            ->getRepository(Venue::class)
+            ->findOneBy(["yelp_id" => $yelp_id]);
+        $user = $this->getDoctrine()
+            ->getRepository(User::class)
+            ->findOneBy(["email" => $request->getUser()]);
+        if(is_null($venue)){
+            throw new HttpException(404, "Venue doesn't exist!");
+        }
+        $commentaire = new Commentaire();
+        $commentaire->setCommentaire($data["commentaire"]);
+        $commentaire->setDate(new \DateTime());
+        $commentaire->setVenue($venue);
+        $commentaire->setUser($user);
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($commentaire);
+        $entityManager->flush();
+        return $this->json(["status" => "OK"]);
     }
 
     /**

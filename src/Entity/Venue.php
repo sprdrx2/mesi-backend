@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\VenueRepository")
@@ -50,6 +52,16 @@ class Venue
      * @ORM\Column(type="boolean")
      */
     private $wc_enfant;
+
+	/**
+     * @ORM\OneToMany(targetEntity="App\Entity\Commentaire", mappedBy="venue")
+     */
+    private $commentaires;
+    public function __construct()
+    {
+        $this->commentaires = new ArrayCollection();
+    }
+
 
     /**
      * @ORM\Column(type="boolean")
@@ -154,6 +166,33 @@ class Venue
     {
         $this->chaise_haute = $chaise_haute;
 
+        return $this;
+    }
+	
+	/**
+     * @return Collection|Commentaire[]
+     */
+    public function getCommentaires(): Collection
+    {
+        return $this->commentaires;
+    }
+    public function addCommentaire(Commentaire $commentaire): self
+    {
+        if (!$this->commentaires->contains($commentaire)) {
+            $this->commentaires[] = $commentaire;
+            $commentaire->setVenueId($this);
+        }
+        return $this;
+    }
+    public function removeCommentaire(Commentaire $commentaire): self
+    {
+        if ($this->commentaires->contains($commentaire)) {
+            $this->commentaires->removeElement($commentaire);
+            // set the owning side to null (unless already changed)
+            if ($commentaire->getVenueId() === $this) {
+                $commentaire->setVenueId(null);
+            }
+        }
         return $this;
     }
 }
