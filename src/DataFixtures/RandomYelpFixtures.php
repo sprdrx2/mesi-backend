@@ -69,6 +69,8 @@ class RandomYelpFixtures extends Fixture
                     	$venue->setTableLanger((bool)rand(0, 1));
                     	$venue->setTableLangerMen((bool)rand(0, 1));
                     	$venue->setMenuEnfant((bool)rand(0, 1));
+                    	$venue->setWcEnfant((bool)rand(0, 1));
+                    	$venue->setChaiseHaute((bool)rand(0, 1));
                     	$this->manager->persist($venue);
 		    } else {
 			$venue = new Venue();
@@ -78,6 +80,8 @@ class RandomYelpFixtures extends Fixture
                     	$venue->setTableLanger(false);
                     	$venue->setTableLangerMen(false);
                     	$venue->setMenuEnfant(false);
+                    	$venue->setChaiseHaute(false);
+                    	$venue->setWcEnfant(false);
                     	$this->manager->persist($venue);	
 		    }	    
                     if ($venue->getEspaceJeu() OR $venue->getEspacePoussette() OR $venue->getMenuEnfant() OR $venue->getTableLanger() OR $venue->getTableLangerMen()) {
@@ -85,8 +89,6 @@ class RandomYelpFixtures extends Fixture
                     }
                 }
             }
-        
-
         echo 'YelpVenues récupérés: ' . $this->yelpVenuesTotal . "\n";
         echo 'YelpVenues insérées: ' . $this->yelpVenuesInserted . "\n";
         echo 'YelpVenues BB Friendly: ' . $this->yelpVenuesBBFriendly . "\n";

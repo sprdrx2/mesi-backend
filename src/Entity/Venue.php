@@ -46,6 +46,16 @@ class Venue
      */
     private $espace_jeu;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $wc_enfant;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $chaise_haute;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -119,6 +129,30 @@ class Venue
     public function setEspaceJeu(?bool $espace_jeu): self
     {
         $this->espace_jeu = $espace_jeu;
+
+        return $this;
+    }
+
+    public function getWcEnfant(): ?bool
+    {
+        return $this->wc_enfant;
+    }
+
+    public function setWcEnfant(bool $wc_enfant): self
+    {
+        $this->wc_enfant = $wc_enfant;
+
+        return $this;
+    }
+
+    public function getChaiseHaute(): ?bool
+    {
+        return $this->chaise_haute;
+    }
+
+    public function setChaiseHaute(bool $chaise_haute): self
+    {
+        $this->chaise_haute = $chaise_haute;
 
         return $this;
     }

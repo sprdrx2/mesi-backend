@@ -15,8 +15,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class VenueController extends AbstractController
 {
 
-
-
     private $yelpApiKey = 'VUgnEj3HGTTbpvVzNh_gChrFdhnn9Gw75jKm761Hlel0tzsF57f3jdptFHQEtO5C7pBjzndUmIcv0S1C7eZh_-9TCI5m5JKVqwB7rFCQDu1ztwvwxjK1Sqs6OJQsXXYx';
     private $yelpApiAddress = 'https://corsanywhere.herokuapp.com/https://api.yelp.com/v3/businesses';
 
@@ -40,6 +38,8 @@ class VenueController extends AbstractController
             $mesiVenueArray["tableLangerMen"] = False;
             $mesiVenueArray["menuEnfant"] = False;
             $mesiVenueArray["espaceJeu"] = False;
+            $mesiVenueArray["wcEnfant"] = false;
+            $mesiVenueArray["chaiseHaute"] = false;
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = null;
 
@@ -51,6 +51,8 @@ class VenueController extends AbstractController
             $mesiVenueArray["tableLangerMen"] = $venue->getTableLangerMen();
             $mesiVenueArray["menuEnfant"] = $venue->getMenuEnfant();
             $mesiVenueArray["espaceJeu"] = $venue->getEspaceJeu();
+            $mesiVenueArray["wcEnfant"] = $venue->getWcEnfant();
+            $mesiVenueArray["chaiseHaute"] = $venue->getChaiseHaute();
             $mesiVenueArray["yelpVenue"] = $yelpVenue;
             $mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
         }
@@ -78,7 +80,8 @@ class VenueController extends AbstractController
             $venue->setEspaceJeu($jsonVenue->espaceJeu);
             $venue->setTableLanger($jsonVenue->tableLanger);
             $venue->setTableLangerMen($jsonVenue->tableLangerMen);
-
+            $venue->setWcEnfant($jsonVenue->wcEnfant);
+            $venue->setChaiseHaute($jsonVenue->chaiseHaute);
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($venue);
             $entityManager->flush();
@@ -115,11 +118,12 @@ class VenueController extends AbstractController
         $venue->setEspaceJeu($jsonVenue->espaceJeu);
         $venue->setTableLanger($jsonVenue->tableLanger);
         $venue->setTableLangerMen($jsonVenue->tableLangerMen);
-
+        $venue->setChaiseHaute($jsonVenue->chaiseHaute);
+        $venue->setWcEnfant($jsonVenue->wcEnfant);
         $entityManager->persist($venue);
         $entityManager->flush($venue);
 
-        return $this->json($venue);
+        return $this->json($jsonVenue);
     }
 
     /**
@@ -170,6 +174,8 @@ class VenueController extends AbstractController
                 $mesiVenueArray["tableLangerMen"] = False;
                 $mesiVenueArray["menuEnfant"] = False;
                 $mesiVenueArray["espaceJeu"] = False;
+                $mesiVenueArray["chaiseHaute"] = False;
+                $mesiVenueArray["wcEnfant"] = False;
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
 		$mesiVenueArray["bbFriendly"] = null;
 
@@ -182,6 +188,8 @@ class VenueController extends AbstractController
                 $mesiVenueArray["tableLangerMen"] = $mesiVenue->getTableLangerMen();
                 $mesiVenueArray["menuEnfant"] = $mesiVenue->getMenuEnfant();
                 $mesiVenueArray["espaceJeu"] = $mesiVenue->getEspaceJeu();
+                $mesiVenueArray["chaiseHaute"] = $mesiVenue->getChaiseHaute();
+                $mesiVenueArray["wcEnfant"] = $mesiVenue->getWcEnfant();
 		$mesiVenueArray["yelpVenue"] = $yelpVenue;
 		$mesiVenueArray["bbFriendly"] = ($mesiVenueArray["espacePoussette"] OR $mesiVenueArray["espaceJeu"] OR  $mesiVenueArray["menuEnfant"] OR$mesiVenueArray["tableLanger"] OR $mesiVenueArray["tableLangerMen"]);
 
